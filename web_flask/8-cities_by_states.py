@@ -1,25 +1,33 @@
 #!/usr/bin/python3
-"""
-starts a Flask web application
+"""Starts a flask web application on 0.0.0.0:5000
+and lists all cities by state
 """
 
 from flask import Flask, render_template
-from models import *
 from models import storage
+from models.state import State
+
+
 app = Flask(__name__)
 
 
 @app.route('/cities_by_states', strict_slashes=False)
-def cities_by_states():
-    """display the states and cities listed in alphabetical order"""
-    states = storage.all("State").values()
-    return render_template('8-cities_by_states.html', states=states)
+def fetchCities():
+    """Returns a page that lists all cities by state"""
+    states = storage.all(State)
+    stateCities = {}
+
+    for state in states.values():
+        stateCities[state] = state.cities
+
+    return render_template('8-cities_by_states.html', stateCities=stateCities)
 
 
 @app.teardown_appcontext
-def teardown_db(exception):
-    """closes the storage on teardown"""
+def tearDown(self):
+    """Removes the current SQLAlchemy Session"""
     storage.close()
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='5000')
+    app.run(debug=True, host='0.0.0.0', port=5000)
